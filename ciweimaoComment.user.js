@@ -5,6 +5,7 @@
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.ciweimao.com/chapter/*
+// @match       https://www.ciweimao.com/book/*
 // @grant GM_setClipboard
 // @grant GM_xmlhttpRequest
 // @grant GM_registerMenuCommand
@@ -24,21 +25,28 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js
 // ==/UserScript==
 var hookAjax = '!function(t){function r(n){if(e[n])return e[n].exports;var o=e[n]={exports:{},id:n,loaded:!1};return t[n].call(o.exports,o,o.exports,r),o.loaded=!0,o.exports}var e={};return r.m=t,r.c=e,r.p="",r(0)}([function(t,r,e){e(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var e=this.hasOwnProperty(r+"_")?this[r+"_"]:this.xhr[r],n=(t[r]||{}).getter;return n&&n(e,this)||e}}function e(r){return function(e){var n=this.xhr,o=this,i=t[r];if("function"==typeof i)n[r]=function(){t[r](o)||e.apply(n,arguments)};else{var a=(i||{}).setter;e=a&&a(e,o)||e;try{n[r]=e}catch(t){this[r+"_"]=e}}}}function n(r){return function(){var e=[].slice.call(arguments);if(!t[r]||!t[r].call(this,e,this.xhr))return this.xhr[r].apply(this.xhr,e)}}window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){var t=new window._ahrealxhr;Object.defineProperty(this,"xhr",{value:t})};var o=window._ahrealxhr.prototype;for(var i in o){var a="";try{a=typeof o[i]}catch(t){}"function"===a?XMLHttpRequest.prototype[i]=n(i):Object.defineProperty(XMLHttpRequest.prototype,i,{get:r(i),set:e(i),enumerable:!0})}return window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);';
-
+var commentScript = "function change_review_page(page){var url1=HB.config.rootPath+\"book/get_review_list_all\";url1=url1+\"/?page=\"+page;loadComment(url1,{book_id:HB.book.book_id},1)}function change_comment_page(page,review_id){var url2=HB.config.rootPath+\"book/get_comment_list_all\";url2=url2+\"/?page=\"+page;$commentList2=$(\"#review_id\"+review_id);$commentList2.load(url2,{review_id:review_id},function(){showAll()});$(\"html,body\").animate({scrollTop:$commentList2.offset().top-400},800)}function change_reply_page(page,comment_id){var url3=HB.config.rootPath+\"book/get_reply_list_all\";url3=url3+\"/?page=\"+page;$replyList=$(\"#commentid_\"+comment_id);$replyList.load(url3,{comment_id:comment_id},function(){showAll()});$(\"html,body\").animate({scrollTop:$replyList.offset().top-400},800)}function loadComment(url,data,jump){$commentList.load(url,data,function(){showAll()});if(jump==1){$(\"html,body\").animate({scrollTop:$commentList.offset().top-400},800)}}function showAll(){var h=78;$(\".J_CommentList\").find(\".J_DescContent\").each(function(){var self=$(this);if(self.outerHeight()>h){var $btn=self.next(\".J_ShowAllBar\").find(\".J_ShowAllBtn\");self.css(\"height\",h+\"px\");$btn.show().one(\"click\",function(){self.css(\"height\",\"auto\");$btn.hide()})}})};";
+$("body").append("<script>"+commentScript+"</script>");
 (function() {
     'use strict';
-    var account = "";
-    var login_token = localStorage.getItem("Hlogin_Token");;
-    fetch('https://www.ciweimao.com/reader/my_info')
-        .then(function(response) {
-        return response.text();
-    })
-        .then(function(text) {
-        var vDom = document.createElement("html");;
-        $(vDom).html(text);
-        var uname = $(vDom).find("div.homepage-bd.info-bd > ul > li:nth-child(1) > div");
-        account = uname.text();
-    });
+    var account = localStorage.getItem("Hlogin_account");
+    var login_token = localStorage.getItem("Hlogin_Token");
+    function updateAccount(){
+        fetch('https://www.ciweimao.com/reader/my_info')
+            .then(function(response) {
+            return response.text();
+        })
+            .then(function(text) {
+            var vDom = document.createElement("html");;
+            $(vDom).html(text);
+            var uname = $(vDom).find("div.homepage-bd.info-bd > ul > li:nth-child(1) > div");
+            account = uname.text();
+            localStorage.setItem("Hlogin_account",account);
+        });
+    }
+    if(!account){
+        updateAccount();
+    }
     var updateTokenDiv = document.createElement("div");
     $("body").append(updateTokenDiv);
     $(updateTokenDiv).html("更新Token").attr('style',"    position: absolute;    top: 0;    right: 0;    z-index: 100;    background: rgba(255,255,255,0.75);    border-radius: 4px;    box-shadow: 0 0 4px #000;    padding: 3px;    margin: 5px;").on('click',openTokenFile);
@@ -55,6 +63,7 @@ var hookAjax = '!function(t){function r(n){if(e[n])return e[n].exports;var o=e[n
         if (!file) {
             return;
         }
+        updateAccount();
         var reader = new FileReader();
         reader.onload = function(e) {
             var contents = e.target.result;
@@ -62,6 +71,7 @@ var hookAjax = '!function(t){function r(n){if(e[n])return e[n].exports;var o=e[n
             //unsafeWindow.fc = fc;
             login_token = contents.split("userCode")[1].substr(10,32);
             localStorage.setItem("Hlogin_Token",login_token);
+
             alert("请检查是否为32位字母数字组合.\r\n若不是，则读取失败. \r\nToken："+login_token);
         };
         reader.readAsText(file);
@@ -150,18 +160,21 @@ var hookAjax = '!function(t){function r(n){if(e[n])return e[n].exports;var o=e[n
     }
     unsafeWindow.eval(hookAjax);
     var xhrA=null;
-
+    var fixUrls = [
+        "get_paragraph_tsukkomi_list",
+        "add_tsukkomi",
+        "get_tsukkomi_list",
+        "get_review_list_all",
+        "like_review",
+        "unlike_review",
+        "add_review_comment"
+    ];
     unsafeWindow.hookAjax({
         open: function(arg, xhr) {
-            if(arg[1].indexOf("get_paragraph_tsukkomi_list?") !=-1){
-                addthisXhr(xhr,arg[0],arg[1]);
-            }
-            if(arg[1].indexOf("add_tsukkomi") !=-1){
-                addthisXhr(xhr,arg[0],arg[1]);
-            }
-            //get_tsukkomi_list
-            if(arg[1].indexOf("get_tsukkomi_list") !=-1){
-                addthisXhr(xhr,arg[0],arg[1]);
+            for(var i=0;i<fixUrls.length;i++){
+                if(arg[1].indexOf(fixUrls[i]) != -1){
+                    addthisXhr(xhr,arg[0],arg[1]);
+                }
             }
             return false;
         },
@@ -173,10 +186,11 @@ var hookAjax = '!function(t){function r(n){if(e[n])return e[n].exports;var o=e[n
                 //console.warn("abort: ",xhr);
                 var url = xhrs[xhr].url.replace(/www.ciweimao.com/, "app.hbooker.com");
                 url = url.replace(/get_paragraph_tsukkomi_list\?/, "get_paragraph_tsukkomi_list_new?");
+                url = url.replace(/get_review_list_all/, "get_review_list");
                 if(url.indexOf("?") != -1){
-                    url = url +"&app_version=2.1.032&account="+account+"&login_token="+login_token;
+                    url = url +"&app_version=2.1.032&account="+account+"&login_token="+login_token+"&book_id="+HB.book.book_id;
                 }else{
-                    url = url +"?app_version=2.1.032&account="+account+"&login_token="+login_token;
+                    url = url +"?app_version=2.1.032&account="+account+"&login_token="+login_token+"&book_id="+HB.book.book_id;
                 }
                 if(url.indexOf("add_tsukkomi")!= -1){
                     xhrs[xhr].method ="GET";
@@ -212,6 +226,95 @@ var hookAjax = '!function(t){function r(n){if(e[n])return e[n].exports;var o=e[n
                             xhrRep[xhrs[xhr].url] = JSON.parse(xhrRep[xhrs[xhr].url]);
                             xhrRep[xhrs[xhr].url].data.paragraph_tsukkomi_amount = xhrRep[xhrs[xhr].url].data.paragraph_info.paragraph_tsukkomi_amount;
                             xhrRep[xhrs[xhr].url] = JSON.stringify(xhrRep[xhrs[xhr].url]);
+                        }
+                        if(xhrs[xhr].url.indexOf("get_review_list_all")!=-1){
+                            var json = JSON.parse(xhrRep[xhrs[xhr].url]);
+                            console.warn(json);
+                            var page = 0;
+                            if(xhrs[xhr].url.indexOf("page")==-1){
+                                $("#J_CommentNum").text(json.data.book_info.review_amount);
+                                unsafeWindow.commentPages = Math.ceil(json.data.book_info.review_amount / 10);
+                            }else{
+                                page =purl.params.page * 1;
+                            }
+
+                            var ret = "<ul class=\"comment-list\">";
+                            for(var i=0;i<json.data.review_list.length;i++){
+                                var thisr = json.data.review_list[i];
+                                var vipn="v";
+                                switch(thisr.reader_info.vip_lv){
+                                    case "1":
+                                        vipn="v";
+                                        break;
+                                    case "2":
+                                        vipn="p";
+                                        break;
+                                    case "3":
+                                        vipn="h";
+                                        break;
+                                    case "4":
+                                        vipn="d";
+                                        break;
+                                    default:
+                                        vipn="v";
+                                }
+                                ret= ret+"        <li class=\"J_Review\" data-reader-id=\"1\" data-review-id=\""+thisr.review_id+"\">\
+<div class=\"img ly-fl\">\
+<img alt=\"\" class=\"lazyload\" data-original=\""+thisr.reader_info.avatar_url+"\" src=\""+thisr.reader_info.avatar_url+"\">\
+<span class='medal medal_3_80'></span>                    </div>\
+<div class=\"bd\">\
+<h3 class=\"name\"><a href=\"https://www.ciweimao.com/bookshelf/"+thisr.reader_info.reader_id+"\" target=\"_blank\" rel=\"nofollow\">"+thisr.reader_info.reader_name+"</a>\
+<i class=\"\"></i>\
+<span class=\"time\">"+thisr.ctime+"</span>\
+</h3>\
+<p class=\"level\"><i class=\"icon-level-"+vipn+"\"></i> LV."+thisr.reader_info.exp_lv+"</p>\
+<div class=\"J_DescContent desc-content\">"+thisr.review_content+"</div>\
+<div class=\"show-all-bar J_ShowAllBar\">\
+<a class=\"J_ShowAllBtn show-all-btn\" href=\"javascript:;\">[显示全文]</a>\
+</div>\
+<div class=\"J_State J_CommentOpt state\">\
+\
+\
+<a href=\"javascript:;\" class=\"J_Zan zan  "+(thisr.is_like?".done":"")+"\">点赞("+thisr.like_amount+")</a>\
+\
+<a href=\"javascript:;\" class=\"J_Hei hei  "+(thisr.is_unlike?".done":"")+"\">点黑("+thisr.unlike_amount+")</a>\
+\
+<a href=\"javascript:;\" class=\"J_FormReply reply\">回复</a>\
+</div>\
+<div id=\"review_id"+thisr.review_id+"\">\
+<div class=\"comment-list-in\">\
+<ul>\
+</ul>\
+</div>\
+\
+<div class=\"review-all-comment\">\
+</div>\
+</div>\
+</div>\
+</li>\
+<div class=\"dialog-box dialog-forbid\" id=\"J_ForbidBox\" style=\"display: none;\">\
+<p class=\"tips\">禁止此用户在当前板块发言，请选择禁言天数：</p>\
+<div class=\"time-box\">\
+<a class=\"select-time\" id=\"J_SelectTime\" href=\"javascript:;\" data-time=\"1\">禁言 1 天</a>\
+<ul class=\"time-list\" id=\"J_TimeList\">\
+<li data-value=\"1\">禁言 1 天</li>\
+<li data-value=\"3\">禁言 3 天</li>\
+<li data-value=\"7\">禁言 7 天</li>\
+<li data-value=\"15\">禁言 15 天</li>\
+</ul>\
+</div>\
+</div>";
+                            }
+                            ret = ret + "<ul class=\"pagination\">";
+                            var startp = 0;
+                            for(var p=0;p<commentPages;p++){
+                                if(p==page){ret = ret+"<li class='selected'><a href='javascript:'>"+(p+1)+"</a></li>"; continue;}
+                                ret = ret+"<li><a href=\"javascript:change_review_page("+p+")\" data-ci-pagination-page=\""+p+"\">"+(p+1)+"</a></li>";
+                            }
+                            ret = ret + "<input type=\"hidden\" value=\""+page+"\" name=\"curr_page\" id=\"curr_page\">\
+<input type=\"hidden\" value=\"change_review_page("+page+")\" name=\"curr_url\" id=\"curr_url\">\
+</ul>";
+                            xhrRep[xhrs[xhr].url] = ret;
                         }
                     }
                     console.warn("OriUrl: ", xhrs[xhr].url);
