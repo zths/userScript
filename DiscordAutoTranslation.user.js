@@ -233,7 +233,7 @@ unsafeWindow.GMDiscordTrsEngine = (engineFuncs.indexOf(GM_getValue('GMDiscordTrs
             inputTrsEngine.type="radio";
             inputTrsEngine.name="TrsEnging";
             inputTrsEngine.checked = unsafeWindow.GMDiscordTrsEngine === e;
-            inputTrsEngine.change = (function(e){
+            inputTrsEngine.onchange = (function(e){
                 return function(){
                     unsafeWindow.GMDiscordTrsEngine = e;
                     GM_setValue('GMDiscordTrsEngine',e);
