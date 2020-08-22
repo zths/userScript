@@ -1,5 +1,6 @@
 // ==UserScript==
-// @name         Discord web auto machine translation
+// @name         Discord 发送消息翻译
+// @name:en      Discord Send msg auto translation
 // @namespace    http://cirno.biz/
 // @version      0.1
 // @description  Discord web automatic machine translation
