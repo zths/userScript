@@ -4,6 +4,7 @@
 // @version      0.1
 // @description  Discord web automatic machine translate
 // @author       AdventCirno
+// @updateURL	 https://github.com/zths/userScript/raw/master/DiscordAutoTranslation.user.js
 // @match        https://discordapp.com/*
 // @match        https://discord.com/*
 // @grant        unsafeWindow
