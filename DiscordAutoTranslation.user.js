@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Discord 发送消息翻译
+// @description  Discord 自动翻译你发出的消息
 // @name:en      Discord Send msg auto translation
+// @description:en  Discord automatic translate msg you send
 // @namespace    http://cirno.biz/
 // @version      0.1
-// @description  Discord 自动翻译你发出的消息
-// @description:en  Discord automatic translate msg you send
 // @author       zths
 // @match        https://discordapp.com/*
 // @match        https://discord.com/*
