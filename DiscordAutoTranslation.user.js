@@ -243,9 +243,13 @@ unsafeWindow.GMDiscordTrsEngine = (Object.keys(engineFuncs).indexOf(GM_getValue(
         toSelAppendTo.appendChild(toSel);
     }
 
-    function addTextInputGMSet(name,getValWrapFunc,setValWrapFunc){
+    function addTextInputGMSet(name,getValWrapFunc,setValWrapFunc,hide){
         var inputTrs = document.createElement("input");
-        inputTrs.type="text";
+        inputTrs.type = "text";
+        if(hide){
+            inputTrs.style.backgroundColor="#fff";
+            inputTrs.style.color="#fff";
+        }
         var gvar = unsafeWindow[name];
         if(getValWrapFunc){
             gvar = getValWrapFunc(gvar);
@@ -263,6 +267,14 @@ unsafeWindow.GMDiscordTrsEngine = (Object.keys(engineFuncs).indexOf(GM_getValue(
         })(name,getValWrapFunc,setValWrapFunc);
         inputTrs.onchange = EvFunc;
         inputTrs.onkeydown = EvFunc;
+        if(hide){
+            inputTrs.onfocus = function(){
+                this.style.color="#000";
+            }
+            inputTrs.onblur = function(){
+                this.style.color="#fff";
+            }
+        }
         return inputTrs;
     }
     function addCheckBoxInputGMSet(name,getValWrapFunc,setValWrapFunc){
@@ -313,10 +325,10 @@ unsafeWindow.GMDiscordTrsEngine = (Object.keys(engineFuncs).indexOf(GM_getValue(
         wrap.insertAdjacentElement('beforeend', inputSplit);
 
         wrap.insertAdjacentHTML('beforeend', "<br>ApiKey: ");
-        wrap.insertAdjacentElement('beforeend', addTextInputGMSet("GMDiscordTrsApiKey"));
+        wrap.insertAdjacentElement('beforeend', addTextInputGMSet("GMDiscordTrsApiKey",undefined,undefined,true));
 
         wrap.insertAdjacentHTML('beforeend', "<br>AppId: ");
-        wrap.insertAdjacentElement('beforeend', addTextInputGMSet("GMDiscordTrsAppId"));
+        wrap.insertAdjacentElement('beforeend', addTextInputGMSet("GMDiscordTrsAppId",undefined,undefined,true));
         wrap.insertAdjacentHTML('beforeend', "(If needed)");
 
 
