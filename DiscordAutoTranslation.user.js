@@ -32,6 +32,7 @@ unsafeWindow.GMDiscordTrsToLang = !GM_getValue('GMDiscordTrsToLang') ? 0 : GM_ge
     unsafeWindow.hookAjax({
         setRequestHeader: function(arg, xhr) {
             if (arg[0] == "Authorization") {
+                //为其他脚本设置的这个....你可以干掉它.
                 unsafeWindow.userToken = arg[1];
             }
         },
