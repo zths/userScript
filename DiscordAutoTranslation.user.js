@@ -1,10 +1,9 @@
 // ==UserScript==
-// @name         Discord web auto machine translate
+// @name         Discord web auto machine translation
 // @namespace    http://cirno.biz/
 // @version      0.1
-// @description  Discord web automatic machine translate
+// @description  Discord web automatic machine translation
 // @author       AdventCirno
-// @updateURL	 https://github.com/zths/userScript/raw/master/DiscordAutoTranslation.user.js
 // @match        https://discordapp.com/*
 // @match        https://discord.com/*
 // @grant        unsafeWindow
@@ -18,13 +17,15 @@
 var hookAjax = '!function(t){function r(n){if(e[n])return e[n].exports;var o=e[n]={exports:{},id:n,loaded:!1};return t[n].call(o.exports,o,o.exports,r),o.loaded=!0,o.exports}var e={};return r.m=t,r.c=e,r.p="",r(0)}([function(t,r,e){e(1)(window)},function(t,r){t.exports=function(t){t.hookAjax=function(t){function r(r){return function(){var e=this.hasOwnProperty(r+"_")?this[r+"_"]:this.xhr[r],n=(t[r]||{}).getter;return n&&n(e,this)||e}}function e(r){return function(e){var n=this.xhr,o=this,i=t[r];if("function"==typeof i)n[r]=function(){t[r](o)||e.apply(n,arguments)};else{var a=(i||{}).setter;e=a&&a(e,o)||e;try{n[r]=e}catch(t){this[r+"_"]=e}}}}function n(r){return function(){var e=[].slice.call(arguments);if(!t[r]||!t[r].call(this,e,this.xhr))return this.xhr[r].apply(this.xhr,e)}}window._ahrealxhr=window._ahrealxhr||XMLHttpRequest,XMLHttpRequest=function(){var t=new window._ahrealxhr;Object.defineProperty(this,"xhr",{value:t})};var o=window._ahrealxhr.prototype;for(var i in o){var a="";try{a=typeof o[i]}catch(t){}"function"===a?XMLHttpRequest.prototype[i]=n(i):Object.defineProperty(XMLHttpRequest.prototype,i,{get:r(i),set:e(i),enumerable:!0})}return window._ahrealxhr},t.unHookAjax=function(){window._ahrealxhr&&(XMLHttpRequest=window._ahrealxhr),window._ahrealxhr=void 0},t.default=t}}]);';
 
 var engineFuncs = ["Caiyun", "DeepL", "Google"];
+var langCodes = ["ja-JP(日本語)","zh-CHS(简中)","en-US(English)","自动检测/AutoDetect","Spanish(Español)","zh-CHT(繁中)",'portuguese(Português)'];
 
 unsafeWindow.GMDiscordTrsOn = GM_getValue(['GMDiscordTrsOn']) === true ? true : false;
 unsafeWindow.GMDiscordTrssplitStrDef = GM_getValue('GMDiscordTrssplitStrDef') ? GM_getValue('GMDiscordTrssplitStrDef') : "\r\n";
 unsafeWindow.GMDiscordTrsOnlyDist = GM_getValue(['GMDiscordTrsOnlyDist']) === true ? true : false;
 unsafeWindow.GMDiscordTrsApiKey = GM_getValue('GMDiscordTrsApiKey') ? GM_getValue('GMDiscordTrsApiKey') : "";
 unsafeWindow.GMDiscordTrsEngine = (engineFuncs.indexOf(GM_getValue('GMDiscordTrsEngine')) !== -1) ? GM_getValue('GMDiscordTrsEngine') : "Google";
-
+unsafeWindow.GMDiscordTrsFromLang = !GM_getValue('GMDiscordTrsFromLang') ? 0 : GM_getValue('GMDiscordTrsFromLang');
+unsafeWindow.GMDiscordTrsToLang = !GM_getValue('GMDiscordTrsToLang') ? 0 : GM_getValue('GMDiscordTrsToLang');
 (function() {
     'use strict';
     unsafeWindow.eval(hookAjax);
@@ -76,10 +77,43 @@ unsafeWindow.GMDiscordTrsEngine = (engineFuncs.indexOf(GM_getValue('GMDiscordTrs
             return false;
         }
     });
+
+
+    function appendLangTrsSelect(fromSelAppendTo,toSelAppendTo){
+        var fromSel = document.createElement('Select');
+        var toSel = document.createElement('Select');
+        for(var i = 0; i < langCodes.length; i++){
+            if(i === 3){continue;}
+            var fromOpt = document.createElement('Option');
+            var toOpt = document.createElement('Option');
+            fromOpt.innerText = langCodes[i];
+            fromOpt.value = i.toString();
+            fromSel.appendChild(fromOpt);
+            if(i !== 3){//"自动检测/AutoDetect"
+                toOpt.innerText = langCodes[i];
+                toOpt.value = i.toString();
+                toSel.appendChild(toOpt);
+            }
+        }
+        fromSel.value = unsafeWindow.GMDiscordTrsFromLang.toString();
+        toSel.value = unsafeWindow.GMDiscordTrsToLang.toString();
+        fromSel.onchange = function(ev){
+            unsafeWindow.GMDiscordTrsFromLang = this.value*1;
+            GM_setValue('GMDiscordTrsFromLang',this.value*1);
+        }
+        toSel.onchange = function(ev){
+            unsafeWindow.GMDiscordTrsToLang = this.value*1;
+            GM_setValue('GMDiscordTrsToLang',this.value*1);
+        }
+        fromSelAppendTo.appendChild(fromSel);
+        toSelAppendTo.appendChild(toSel);
+    }
+
     window.apiCallBackTextGoogle = function (text,callback){
+        var langPars = ['ja', 'zh-CN', 'en', 'auto', 'es', 'zh-CN', 'pt'];
         GM_xmlhttpRequest({
             method:     'GET',
-            url:        "https://translate.google.com/translate_a/single?client=at&sl=zh-CN&tl=en&dt=t&q="+encodeURIComponent(text),
+            url:        "https://translate.google.com/translate_a/single?client=at&sl="+langPars[unsafeWindow.GMDiscordTrsFromLang]+"&tl="+langPars[unsafeWindow.GMDiscordTrsToLang]+"&dt=t&q="+encodeURIComponent(text),
             onload:     function (responseDetails) {
                 //console.warn(responseDetails);
                 try{
@@ -107,12 +141,13 @@ unsafeWindow.GMDiscordTrsEngine = (engineFuncs.indexOf(GM_getValue('GMDiscordTrs
     }
 
     window.apiCallBackTextCaiyun = function(text,callback){
+        var langPars = ['ja','zh','en','auto', 'es', 'zh', 'pt'];
         GM_xmlhttpRequest({
             method:     'POST',
             url:        "http://api.interpreter.caiyunai.com/v1/translator",
             data:       JSON.stringify({
                 "source" : text,
-                "trans_type" : 'zh2en',
+                "trans_type" : langPars[unsafeWindow.GMDiscordTrsFromLang]+"2"+langPars[unsafeWindow.GMDiscordTrsFromLang],
                 "request_id" : "demo",
                 "detect": false,
             }),
@@ -138,7 +173,8 @@ unsafeWindow.GMDiscordTrsEngine = (engineFuncs.indexOf(GM_getValue('GMDiscordTrs
 
 
     window.apiCallBackTextDeepL = function (text,callback){
-        var preArg = "ignore_tags=trsIgnoretag&tag_handling=xml&source_lang=ZH&target_lang=EN&preserve_formatting=0&auth_key=" + unsafeWindow.GMDiscordTrsApiKey;
+        var langPars = ['JA','ZH','EN','AUTO', 'ES', 'ZH', 'PT'];
+        var preArg = "ignore_tags=trsIgnoretag&tag_handling=xml&source_lang="+langPars[unsafeWindow.GMDiscordTrsFromLang]+"&target_lang="+langPars[unsafeWindow.GMDiscordTrsToLang]+"&preserve_formatting=0&auth_key=" + unsafeWindow.GMDiscordTrsApiKey;
         GM_xmlhttpRequest({
             method:     'POST',
             url:        "https://api.deepl.com/v1/translate",
@@ -181,7 +217,7 @@ unsafeWindow.GMDiscordTrsEngine = (engineFuncs.indexOf(GM_getValue('GMDiscordTrs
             unsafeWindow.GMDiscordTrsOn = inputTrs.checked;
             GM_setValue('GMDiscordTrsOn',inputTrs.checked);
         }
-        wrap.insertAdjacentHTML('beforeend', "<br>总开关");
+        wrap.insertAdjacentHTML('beforeend', "<br>Global Switch: ");
         wrap.insertAdjacentElement('beforeend', inputTrs);
 
         var inputOnlyTrs = document.createElement("input");
@@ -191,7 +227,7 @@ unsafeWindow.GMDiscordTrsEngine = (engineFuncs.indexOf(GM_getValue('GMDiscordTrs
             unsafeWindow.GMDiscordTrsOnlyDist = inputOnlyTrs.checked;
             GM_setValue('GMDiscordTrsOnlyDist',inputOnlyTrs.checked);
         }
-        wrap.insertAdjacentHTML('beforeend', "<br>仅发送译文");
+        wrap.insertAdjacentHTML('beforeend', "<br>Only Send Dest Lang: ");
         wrap.insertAdjacentElement('beforeend', inputOnlyTrs);
 
         var inputTrsSplit = document.createElement("input");
@@ -209,7 +245,7 @@ unsafeWindow.GMDiscordTrsEngine = (engineFuncs.indexOf(GM_getValue('GMDiscordTrs
             unsafeWindow.GMDiscordTrssplitStrDef = val;
             GM_setValue('GMDiscordTrssplitStrDef',val);
         };
-        wrap.insertAdjacentHTML('beforeend', "<br>原文、译文分隔: ");
+        wrap.insertAdjacentHTML('beforeend', "<br>Split for Src / Dst text: ");
         wrap.insertAdjacentElement('beforeend', inputTrsSplit);
 
         var inputTrsApiKey = document.createElement("input");
@@ -226,9 +262,8 @@ unsafeWindow.GMDiscordTrsEngine = (engineFuncs.indexOf(GM_getValue('GMDiscordTrs
         wrap.insertAdjacentHTML('beforeend', "<br>ApiKey: ");
         wrap.insertAdjacentElement('beforeend', inputTrsApiKey);
 
-        wrap.insertAdjacentHTML('beforeend', "<br> ");
+        wrap.insertAdjacentHTML('beforeend', "<br> Engine: ");
         engineFuncs.forEach(function(e){
-
             var inputTrsEngine = document.createElement("input");
             inputTrsEngine.type="radio";
             inputTrsEngine.name="TrsEnging";
@@ -242,6 +277,14 @@ unsafeWindow.GMDiscordTrsEngine = (engineFuncs.indexOf(GM_getValue('GMDiscordTrs
             wrap.insertAdjacentElement('beforeend', inputTrsEngine);
             wrap.insertAdjacentHTML('beforeend', " "+e+" ");
         });
+        wrap.insertAdjacentHTML('beforeend', "<br> ");
+        var fromSpan = document.createElement("span");
+        var toSpan = document.createElement("span");
+        fromSpan.innerText = "Src Lang: ";
+        toSpan.innerText = "Dst Lang: ";
+        appendLangTrsSelect(fromSpan,toSpan);
+        wrap.insertAdjacentElement('beforeend', fromSpan);
+        wrap.insertAdjacentElement('beforeend', toSpan);
         document.body.insertAdjacentElement('beforeend', wrap);
     }
 
