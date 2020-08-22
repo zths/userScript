@@ -157,7 +157,7 @@ var engineFuncs = {
     }
 };
 unsafeWindow.GMDiscordTrsEngine = (Object.keys(engineFuncs).indexOf(GM_getValue('GMDiscordTrsEngine')) !== -1) ? GM_getValue('GMDiscordTrsEngine') : "Google";
-
+unsafeWindow.GMDiscordTrsEngineLast =unsafeWindow.GMDiscordTrsEngine;
 (function() {
     'use strict';
     unsafeWindow.eval(hookAjax);
@@ -342,6 +342,27 @@ unsafeWindow.GMDiscordTrsEngine = (Object.keys(engineFuncs).indexOf(GM_getValue(
                 return function(){
                     unsafeWindow.GMDiscordTrsEngine = e;
                     GM_setValue('GMDiscordTrsEngine',e);
+                    GM_setValue('GMDiscordTrsEngineAppKey_' + unsafeWindow.GMDiscordTrsEngineLast, unsafeWindow.GMDiscordTrsApiKey);
+                    GM_setValue('GMDiscordTrsEngineAppId_' + unsafeWindow.GMDiscordTrsEngineLast, unsafeWindow.GMDiscordTrsAppId);
+                    var appk = GM_getValue('GMDiscordTrsEngineAppKey_' + e);
+                    var appi = GM_getValue('GMDiscordTrsEngineAppId_' + e);
+                    if(appk){
+                        GM_setValue('GMDiscordTrsApiKey',appk);
+                        unsafeWindow.GMDiscordTrsApiKey = appk;
+                    }else{
+                        GM_setValue('GMDiscordTrsApiKey',"");
+                        unsafeWindow.GMDiscordTrsApiKey = "";
+                    }
+                    if(appi){
+                        GM_setValue('GMDiscordTrsAppId',appi);
+                        unsafeWindow.GMDiscordTrsAppId = appi;
+                    }else{
+                        GM_setValue('GMDiscordTrsAppId',"");
+                        unsafeWindow.GMDiscordTrsAppId = "";
+                    }
+                    unsafeWindow.GMDiscordTrsEngineLast = e;
+                    toggleOptions();
+                    toggleOptions();
                 }
             })(e);
             wrap.insertAdjacentElement('beforeend', inputTrsEngine);
