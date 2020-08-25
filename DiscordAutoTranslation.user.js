@@ -194,20 +194,22 @@ GMDiscordTrsOpt.GMDiscordTrsEngineLast = GMDiscordTrsOpt.GMDiscordTrsEngine;
                         if (msg.content && msg.content.length > 1) {
                             var cb = (function(msg, xhr) {
                                 return function(text) {
-                                    if(GMDiscordTrsOpt.GMDiscordTrsShowEngine){
-                                        text = GMDiscordTrsOpt.GMDiscordTrsEngine + ": " + text;
-                                    }
-                                    if(GMDiscordTrsOpt.GMDiscordTrsToLang === 5){
-                                        text = s2t(text);
-                                    }
-                                    if(GMDiscordTrsOpt.GMDiscordTrsToLang === 1){
-                                        text = t2s(text);
-                                    }
-                                    if(msg.content && msg.content !== text){
-                                        if (GMDiscordTrsOpt.GMDiscordTrsOnlyDist) {
-                                            msg.content = text;
-                                        } else {
-                                            msg.content = msg.content + GMDiscordTrsOpt.GMDiscordTrssplitStrDef + text;
+                                    if(text !== ""){
+                                        if(GMDiscordTrsOpt.GMDiscordTrsShowEngine){
+                                            text = GMDiscordTrsOpt.GMDiscordTrsEngine + ": " + text;
+                                        }
+                                        if(GMDiscordTrsOpt.GMDiscordTrsToLang === 5){
+                                            text = s2t(text);
+                                        }
+                                        if(GMDiscordTrsOpt.GMDiscordTrsToLang === 1){
+                                            text = t2s(text);
+                                        }
+                                        if(msg.content && msg.content !== text){
+                                            if (GMDiscordTrsOpt.GMDiscordTrsOnlyDist) {
+                                                msg.content = text;
+                                            } else {
+                                                msg.content = msg.content + GMDiscordTrsOpt.GMDiscordTrssplitStrDef + text;
+                                            }
                                         }
                                     }
                                     xhr.send(JSON.stringify(msg));
